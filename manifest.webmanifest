@@ -1,6 +1,6 @@
 {
-  "name": "Eco-Line Coach",
-  "short_name": "Eco-Line",
+  "name": "LapYield",
+  "short_name": "LapYield",
   "description": "Record your karting session with your phone and see where you waste fuel and time.",
   "start_url": "./",
   "scope": "./",

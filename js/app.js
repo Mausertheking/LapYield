@@ -1,4 +1,4 @@
-// Eco-Line Coach - screens, routing and report rendering.
+// LapYield - screens, routing and report rendering.
 import { t, setLang, getLang, num } from './i18n.js';
 import { analyzeSession, SECTORS, KART, TRACK_LENGTH, project } from './analysis.js';
 import { TRACK } from './track.js';
@@ -428,11 +428,11 @@ function stamp(s) { return new Date(s.startedAt).toISOString().slice(0, 16).repl
 function downloadCsv(s) {
   const rows = ['time_iso,lat,lon,accuracy_m,speed_mps'];
   for (const p of s.points) rows.push([new Date(p[0]).toISOString(), p[1], p[2], p[3] ?? '', p[4] ?? ''].join(','));
-  download(`ecoline-${stamp(s)}.csv`, rows.join('\n'), 'text/csv');
+  download(`lapyield-${stamp(s)}.csv`, rows.join('\n'), 'text/csv');
 }
 function downloadGpx(s) {
   const pts = s.points.map(p => `<trkpt lat="${p[1]}" lon="${p[2]}"><time>${new Date(p[0]).toISOString()}</time></trkpt>`).join('\n');
-  download(`ecoline-${stamp(s)}.gpx`, `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Eco-Line Coach" xmlns="http://www.topografix.com/GPX/1/1"><trk><name>${TRACK.name}</name><trkseg>\n${pts}\n</trkseg></trk></gpx>`, 'application/gpx+xml');
+  download(`lapyield-${stamp(s)}.gpx`, `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="LapYield" xmlns="http://www.topografix.com/GPX/1/1"><trk><name>${TRACK.name}</name><trkseg>\n${pts}\n</trkseg></trk></gpx>`, 'application/gpx+xml');
 }
 
 // ---------- offline support ----------

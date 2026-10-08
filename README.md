@@ -1,4 +1,4 @@
-# Eco-Line Coach
+# LapYield
 
 A web app for kart drivers at Baku City Karting. The driver opens a page on their phone, taps **Start** and drives. Afterwards they get a report showing lap times, estimated fuel and CO₂ per lap, eco and pace scores, a speed map of their best lap and coaching tips for each sector.
 
@@ -7,12 +7,12 @@ There is nothing to install, no account, and no server. Everything runs in the p
 ## Put it online with GitHub Pages (free, about 5 minutes)
 
 1. Create a GitHub account if you don't have one, then click **New repository**.
-   - Name it e.g. `eco-line-coach` and set it to **Public**.
+   - Name it e.g. `LapYield` and set it to **Public**.
 2. Click **uploading an existing file**. Drag in **everything inside this folder**: `index.html`, `css/`, `js/`, `sw.js`, `manifest.webmanifest`, the icons, and `tools/` if you like. Click **Commit changes**.
    - `index.html` must be at the top level of the repository, not inside another folder.
 3. Go to **Settings → Pages**. Under *Build and deployment*, choose **Deploy from a branch**, branch **main**, folder **/ (root)**, then **Save**.
 4. Wait about 1 minute. The site will be at:
-   `https://YOUR-USERNAME.github.io/eco-line-coach/`
+   `https://YOUR-USERNAME.github.io/LapYield/`
 5. Open that link on your phone. GitHub Pages uses HTTPS, which phone browsers require before they allow GPS.
 
 To update the site later, upload the changed files to the same repository. The site refreshes within a minute.

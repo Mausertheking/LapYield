@@ -79,7 +79,7 @@ export class Recorder {
   arm({ kart } = {}) {
     const now = Date.now();
     this.session = { id: 's-' + now, startedAt: now, kart: kart || '', status: 'recording',
-                     points: [], motion: [], recordingFrom: null, app: 'eco-line-coach/1' };
+                     points: [], motion: [], recordingFrom: null, app: 'lapyield/1' };
     this.distance = 0; this.fastFixes = 0; this.stoppedSince = null;
     this.setState('armed');
     this.autosaveTimer = setInterval(() => this.autosave(), AUTOSAVE_MS);

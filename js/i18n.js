@@ -1,7 +1,7 @@
 // Translations: English, Azerbaijani, Russian. {name} placeholders are filled by t().
 export const STRINGS = {
   en: {
-    appName: 'Eco-Line Coach',
+    appName: 'LapYield',
     tagline: 'Drive smarter. Burn less fuel.',
     startSession: 'Start a session',
     tryDemo: 'See a demo report',
@@ -86,7 +86,7 @@ export const STRINGS = {
     qrTitle: 'QR code for this page',
   },
   az: {
-    appName: 'Eco-Line Coach',
+    appName: 'LapYield',
     tagline: 'Ağıllı sür. Daha az yanacaq yandır.',
     startSession: 'Sessiyaya başla',
     tryDemo: 'Nümunə hesabata bax',
@@ -171,7 +171,7 @@ export const STRINGS = {
     qrTitle: 'Bu səhifənin QR kodu',
   },
   ru: {
-    appName: 'Eco-Line Coach',
+    appName: 'LapYield',
     tagline: 'Езди умнее. Трать меньше топлива.',
     startSession: 'Начать заезд',
     tryDemo: 'Посмотреть пример отчёта',
