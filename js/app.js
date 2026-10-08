@@ -11,6 +11,9 @@ const app = document.getElementById('app');
 let recorder = null;
 let liveTimer = null;
 const analysisCache = new Map();
+// Official track length published by Baku City Karting (shown to drivers). The analysis itself
+// uses the measured centreline in track.js, which is shorter because it follows the traced layout.
+const OFFICIAL_LENGTH_M = 802;
 document.documentElement.lang = getLang();
 
 // ---------- tiny DOM helper (text is always set via textContent) ----------
@@ -95,7 +98,7 @@ async function renderHome() {
       topbar(),
       h('div', { class: 'chips' },
         h('span', { class: 'chip' }, h('span', { class: 'live' }), TRACK.name),
-        h('span', { class: 'chip' }, t('trackFacts', { len: Math.round(TRACK_LENGTH), turns: TRACK.corners.length }))),
+        h('span', { class: 'chip' }, t('trackFacts', { len: OFFICIAL_LENGTH_M, turns: TRACK.corners.length }))),
       h('h1', {}, t('tagline')),
       h('p', { class: 'lead' }, t('heroLead')),
       h('div', { class: 'hero-track' }, hero.svg),

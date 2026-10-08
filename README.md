@@ -27,7 +27,7 @@ Once you know the URL, create a QR code for it with any QR generator, or ask Cla
 |---|---|---|
 | Setup | Checks GPS accuracy (waits for ±20 m or better), motion sensors and that the screen stays on (Wake Lock) | `js/app.js`, `js/recorder.js` |
 | Recording | Logs GPS about once per second plus the accelerometer 10 times per second. Starts automatically once the kart moves faster than 10 km/h, and stops 45 s after it parks. A 2-second press on the button stops it manually. Saves to the phone every 5 s, so nothing is lost if the browser crashes. | `js/recorder.js`, `js/storage.js` |
-| Map matching | Each GPS point is matched to the traced track centreline (644 m), and a lap is counted each time the kart crosses the start/finish line | `js/analysis.js` |
+| Map matching | Each GPS point is matched to the traced track centreline (642 m measured from satellite imagery; the official length shown on the home screen is 802 m), and a lap is counted each time the kart crosses the start/finish line | `js/analysis.js` |
 | Fuel | Speed trace → force (F = ma + drag + rolling resistance) → engine power → fuel, using the calibrated kart model (Honda GX270, 4.5 kW effective) | `js/physics.js` |
 | Comparison | Each lap is compared with the simulated **fastest possible** lap (50.1 s) and the **eco line** (53.8 s). To keep it fair, the reference laps are sampled once per second, the same rate as the phone. | `js/analysis.js` |
 | Tips | The 14 corners are grouped into 6 sectors. The app finds where you waste the most fuel and lose the most time, and explains how to fix it. | `js/analysis.js`, `js/i18n.js` |
