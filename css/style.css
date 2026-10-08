@@ -267,3 +267,13 @@ tr.invalid td { color: var(--text-3); }
 .spinner { width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--surface-3); border-top-color: var(--brand); animation: spin 0.9s linear infinite; margin: 40px auto 14px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .footer-note { font-size: 12px; color: var(--text-3); margin-top: 20px; line-height: 1.5; }
+
+/* driver weight */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.two-col label.field { font-size: 14px; min-height: 38px; }
+.field-help { font-size: 13px; color: var(--text-3); margin: 10px 0 0; line-height: 1.45; }
+.weight-row { display: flex; gap: 10px; align-items: stretch; }
+.weight-row .btn { width: auto; flex: 0 0 auto; min-height: 50px; }
+.weight-input { position: relative; flex: 1; }
+.weight-input input { padding-right: 46px; height: 100%; }
+.weight-input span { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-3); font-weight: 600; }

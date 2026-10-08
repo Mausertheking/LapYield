@@ -1,6 +1,6 @@
 // LapYield - screens, routing and report rendering.
 import { t, setLang, getLang, num } from './i18n.js';
-import { analyzeSession, SECTORS, KART, TRACK_LENGTH, project } from './analysis.js';
+import { analyzeSession, SECTORS, KART, TRACK_LENGTH, project, DEFAULT_DRIVER_KG } from './analysis.js';
 import { TRACK } from './track.js';
 import { Recorder } from './recorder.js';
 import * as store from './storage.js';
@@ -11,6 +11,7 @@ const app = document.getElementById('app');
 let recorder = null;
 let liveTimer = null;
 const analysisCache = new Map();
+let demoKg = null;
 // Official track length published by Baku City Karting (shown to drivers). The analysis itself
 // uses the measured centreline in track.js, which is shorter because it follows the traced layout.
 const OFFICIAL_LENGTH_M = 802;
@@ -49,6 +50,7 @@ const ICON = {
   fuel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v16"/><path d="M3 21h13M7 8h5"/><path d="M15 10h2a2 2 0 0 1 2 2v4a1.5 1.5 0 0 0 3 0V8l-3-3"/></svg>',
   wifi: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0"/><path d="M12 19h.01"/></svg>',
   download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>',
+  scale: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21h14l-1.5-11h-11z"/><circle cx="12" cy="6.5" r="2.5"/><path d="M12 14v3"/></svg>',
   leafG: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 6-14 15-14 0 9-6 15-14 15"/><path d="M5 19c3-4 6-6 9-7"/></svg>',
 };
 const icon = (name, cls) => h('span', { class: cls, html: ICON[name], 'aria-hidden': 'true' });
@@ -59,6 +61,9 @@ function topbar({ back } = {}) {
   const brand = h('a', { class: 'brand', href: '#home' }, h('span', { class: 'brand-mark', html: ICON.leaf }), t('appName'));
   return h('div', { class: 'topbar' }, brand, langs);
 }
+const getSavedKg = () => { try { const v = +localStorage.getItem('lapyield.driverKg'); return v > 0 ? v : null; } catch (e) { return null; } };
+const saveKg = (v) => { try { if (v) localStorage.setItem('lapyield.driverKg', String(v)); } catch (e) { /* ignore */ } };
+const parseKg = (str) => { const v = Math.round(parseFloat(String(str).replace(',', '.'))); return v >= 25 && v <= 160 ? v : null; };
 const fmtS = (s) => `${num(s, 1)} ${t('unitS')}`;
 const AZ_MONTHS = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avqust', 'sentyabr', 'oktyabr', 'noyabr', 'dekabr'];
 const fmtDate = (ms) => {
@@ -149,16 +154,25 @@ function renderSetup() {
   const screen = checkRow(t('checkScreen'), '…', 'pending');
   const place = checkRow(t('checkPlace'), t('placeText'), 'ok');
   const kart = h('input', { class: 'text', id: 'kart', inputmode: 'numeric', maxlength: 4, autocomplete: 'off', placeholder: '#' });
+  const savedKg = getSavedKg();
+  const weight = h('input', { class: 'text', id: 'weight', inputmode: 'decimal', maxlength: 5, autocomplete: 'off', placeholder: String(DEFAULT_DRIVER_KG), value: savedKg ? String(savedKg) : null });
   const ready = h('button', { class: 'btn primary', disabled: true, onclick: beginRecording }, h('span', { html: ICON.play, style: 'display:grid' }), t('readyBtn'));
   const anyway = h('button', { class: 'btn ghost', style: 'display:none', onclick: beginRecording }, t('startAnyway'));
   function beginRecording() {
     recorder.requestWakeLock();
+    const kg = parseKg(weight.value);
+    saveKg(kg);
     recorder.arm({ kart: kart.value.trim() });
+    recorder.session.driverKg = kg || DEFAULT_DRIVER_KG;
+    recorder.session.driverKgEntered = !!kg;
     go('#rec');
   }
   app.replaceChildren(topbar(), stepper(0), h('h1', {}, t('setupTitle')),
     h('div', { class: 'card' }, gps.row, motion.row, screen.row, place.row),
-    h('div', { class: 'card' }, h('label', { class: 'field', for: 'kart' }, t('kartNumber')), kart),
+    h('div', { class: 'card' }, h('div', { class: 'two-col' },
+      h('div', {}, h('label', { class: 'field', for: 'kart' }, t('kartNumber')), kart),
+      h('div', {}, h('label', { class: 'field', for: 'weight' }, t('driverWeight')), weight)),
+      h('p', { class: 'field-help' }, t('driverWeightHelp'))),
     h('div', { class: 'stack' }, ready, anyway,
       h('button', { class: 'btn ghost', onclick: () => { recorder.cancel(); recorder = null; go('#home'); } }, t('back'))));
 
@@ -275,7 +289,7 @@ function renderRec() {
 
 // ---------- report ----------
 async function loadSession(id) {
-  if (id === 'demo') return { ...SAMPLE_SESSION, demo: true };
+  if (id === 'demo') return { ...SAMPLE_SESSION, demo: true, id: 'demo-' + (demoKg || DEFAULT_DRIVER_KG), driverKg: demoKg || DEFAULT_DRIVER_KG };
   return store.getSession(id);
 }
 function getAnalysis(session) {
@@ -303,7 +317,7 @@ async function renderReport(id) {
     store.saveSession(session).catch(() => {});
   }
   const valid = a.ok ? a.laps.filter(l => l.valid) : [];
-  const metaLine = `${fmtDate(session.startedAt)}` + (session.kart ? ` · ${t('kart')} #${session.kart}` : '');
+  const metaLine = `${fmtDate(session.startedAt)}` + (session.kart ? ` · ${t('kart')} #${session.kart}` : '') + (a.ok ? ` · ${t('driverMeta', { kg: a.driverKg })}` : '');
   const parts = [];
 
   if (!valid.length) {
@@ -350,7 +364,7 @@ async function renderReport(id) {
 
     const map = trackMap(best);
     parts.push(h('div', { class: 'card' }, cardHead('map', t('mapTitle'), fmtS(best.time)), h('div', { class: 'chart' }, map), mapLegend(map)));
-    parts.push(h('div', { class: 'card' }, cardHead('chart', t('chartTitle')), speedChart(best)));
+    parts.push(h('div', { class: 'card' }, cardHead('chart', t('chartTitle')), speedChart(best, a.ref)));
 
     const secRows = SECTORS.map((z, j) => {
       const tl = avg(l => l.sectors[j].time) - valid[0].sectors[j].idealTime;
@@ -380,6 +394,23 @@ async function renderReport(id) {
       h('tr', {}, h('td', {}, t('duration')), h('td', {}, `${fmtDur(a.session.durationS)} ${t('unitMin')}`)),
       h('tr', {}, h('td', {}, t('fuelTotal')), h('td', {}, `${num(a.session.fuelL * 1000, 0)} ${t('unitMl')}`)),
       h('tr', {}, h('td', {}, t('co2Total')), h('td', {}, `${num(a.session.co2G, 0)} ${t('unitG')}`))))));
+
+  if (a.ok) {
+    const wIn = h('input', { class: 'text', id: 'w2', inputmode: 'decimal', maxlength: 5, value: String(a.driverKg), 'aria-label': t('weightTitle') });
+    const apply = async () => {
+      const kg = parseKg(wIn.value); if (!kg || kg === a.driverKg) return;
+      session.driverKg = kg; session.driverKgEntered = true; saveKg(kg);
+      analysisCache.delete(session.id);
+      if (!session.demo) { session.summary = null; await store.saveSession(session).catch(() => {}); }
+      else demoKg = kg;
+      renderReport(id);
+    };
+    wIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') apply(); });
+    parts.push(h('div', { class: 'card' }, cardHead('scale', t('weightTitle')),
+      h('div', { class: 'weight-row' }, h('div', { class: 'weight-input' }, wIn, h('span', {}, t('unitKg'))),
+        h('button', { class: 'btn', onclick: apply }, t('weightUpdate'))),
+      h('p', { class: 'field-help' }, t('weightNote', { kg: a.driverKg }))));
+  }
 
   const delBtn = h('button', { class: 'btn danger' }, t('deleteSession'));
   let armed = false;

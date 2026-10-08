@@ -84,13 +84,13 @@ export function mapLegend(svg) {
 }
 
 // ---------- speed chart ----------
-export function speedChart(lap) {
+export function speedChart(lap, ref = { idealV: TRACK.ref.ideal.v, ecoV: TRACK.ref.eco.v }) {
   const wrap = document.createElement('div');
   wrap.className = 'chart';
   const series = [
     { key: 'you', label: t('seriesYou'), color: 'var(--series-1)', v: lap.profile },
-    { key: 'ideal', label: t('seriesIdeal'), color: 'var(--series-2)', v: TRACK.ref.ideal.v, dash: '5 4' },
-    { key: 'eco', label: t('seriesEco'), color: 'var(--series-3)', v: TRACK.ref.eco.v },
+    { key: 'ideal', label: t('seriesIdeal'), color: 'var(--series-2)', v: ref.idealV, dash: '5 4' },
+    { key: 'eco', label: t('seriesEco'), color: 'var(--series-3)', v: ref.ecoV },
   ];
   const legend = document.createElement('div'); legend.className = 'legend';
   for (const s of series) {

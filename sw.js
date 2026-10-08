@@ -1,5 +1,5 @@
 // Offline cache: the app works at the track even without mobile signal once it has been opened.
-const VERSION = 'lapyield-v4';
+const VERSION = 'lapyield-v5';
 const FILES = ['./', 'index.html', 'css/style.css', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png',
   'js/app.js', 'js/analysis.js', 'js/physics.js', 'js/track.js', 'js/sample.js', 'js/i18n.js', 'js/storage.js',
   'js/recorder.js', 'js/charts.js'];

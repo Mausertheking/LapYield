@@ -91,36 +91,43 @@ for k, c in enumerate(corners):
 print('%d corners:' % len(corners), [(c['id'], c['dir'], c['radius']) for c in corners])
 
 # ---------------- reference laps ----------------
-kart = ks.Kart()
+# Computed for several driver weights so drivers are compared with a kart that weighs
+# the same as theirs. kart_sim's default mass (165 kg) assumes a 70 kg driver.
+DEFAULT_DRIVER_KG = 70
+KART_BASE_KG = ks.Kart().mass - DEFAULT_DRIVER_KG
+DRIVER_KGS = [40, 55, 70, 85, 100, 115, 130]
 lx, ly, _ = ks.racing_line(cx, cy, np.full(len(cx), WIDTH), 1.0)
 grid = np.arange(0, L, DS)
-refs = {}
-for name, drv in {'ideal': ks.Driver('ideal', 1.0, 1.0, 1.0, 1.0),
-                  'eco': ks.PRESETS['eco']}.items():
+j = np.array([np.argmin((cx - a) ** 2 + (cy - b) ** 2) for a, b in zip(lx, ly)])
+sc = s_c[j]
+o = np.argsort(sc)
+i0 = int(np.argmin(np.abs(((sc + L / 2) % L) - L / 2)))   # racing-line sample nearest the SF line
+rl = np.roll(np.arange(len(sc)), -i0)
+s_m = np.maximum.accumulate((sc[rl] - sc[rl[0]]) % L * (np.arange(len(rl)) > 0))
+
+def reference(kart, drv):
     tel, summ = ks.simulate_lap(lx, ly, kart, drv)
-    # project racing-line samples onto centreline arc length
-    j = np.array([np.argmin((cx - a) ** 2 + (cy - b) ** 2) for a, b in zip(lx, ly)])
-    sc = s_c[j]
-    # unwrap to be monotonic starting at the SF line
-    o = np.argsort(sc)
     v = np.interp(grid, sc[o], tel['speed_mps'][o], period=L)
     # time and fuel come straight from the simulation (racing line), indexed by
     # centreline position, so the reference lap time equals the simulated lap time
-    t_rl = tel['time_s']; f_rl = tel['fuel_cum_g']
-    s_u = np.unwrap(sc / L * 2 * np.pi) / (2 * np.pi) * L
-    s_u -= s_u[0]
-    i0 = int(np.argmin(np.abs(((sc + L / 2) % L) - L / 2)))   # racing-line sample nearest the SF line
-    rl = np.roll(np.arange(len(sc)), -i0)
-    s_m = np.maximum.accumulate((sc[rl] - sc[rl[0]]) % L * (np.arange(len(rl)) > 0))
-    t_m = (t_rl[rl] - t_rl[rl[0]]) % summ['lap_time_s']
-    f_m = (f_rl[rl] - f_rl[rl[0]]) % summ['fuel_g']
-    tC = np.interp(grid, s_m, t_m); fC = np.interp(grid, s_m, f_m)
-    refs[name] = {'v': np.round(v, 2).tolist(),
-                  'tCum': np.round(tC, 3).tolist(),
-                  'fuelCum': np.round(fC, 4).tolist(),
-                  'lapTime': round(float(summ['lap_time_s']), 2),
-                  'fuelG': round(float(summ['fuel_g']), 2)}
-    print('%s: %.1f s, %.1f g fuel' % (name, refs[name]['lapTime'], refs[name]['fuelG']))
+    t_m = (tel['time_s'][rl] - tel['time_s'][rl[0]]) % summ['lap_time_s']
+    f_m = (tel['fuel_cum_g'][rl] - tel['fuel_cum_g'][rl[0]]) % summ['fuel_g']
+    return {'v': np.round(v, 2).tolist(),
+            'tCum': np.round(np.interp(grid, s_m, t_m), 3).tolist(),
+            'fuelCum': np.round(np.interp(grid, s_m, f_m), 4).tolist(),
+            'lapTime': round(float(summ['lap_time_s']), 2),
+            'fuelG': round(float(summ['fuel_g']), 2)}
+
+DRIVERS = {'ideal': ks.Driver('ideal', 1.0, 1.0, 1.0, 1.0), 'eco': ks.PRESETS['eco']}
+refs_by_mass = []
+for kg in DRIVER_KGS:
+    k = ks.Kart(mass=KART_BASE_KG + kg)
+    entry = {'driverKg': kg, **{name: reference(k, d) for name, d in DRIVERS.items()}}
+    refs_by_mass.append(entry)
+    print('driver %3d kg: ideal %.1f s / %.1f g, eco %.1f s / %.1f g' % (kg, entry['ideal']['lapTime'], entry['ideal']['fuelG'], entry['eco']['lapTime'], entry['eco']['fuelG']))
+kart = ks.Kart()
+refs = next(e for e in refs_by_mass if e['driverKg'] == DEFAULT_DRIVER_KG)
+refs = {'ideal': refs['ideal'], 'eco': refs['eco']}
 
 lat, lon = to_latlon(cx, cy)
 track = {
@@ -132,6 +139,8 @@ track = {
     'centreLatLon': np.round(np.c_[lat, lon], 7).tolist(),
     'corners': corners,
     'ref': refs,
+    'refsByMass': refs_by_mass,
+    'defaultDriverKg': DEFAULT_DRIVER_KG, 'kartBaseKg': KART_BASE_KG,
     'kart': {k: v for k, v in asdict(kart).items()},
     'fuel': {'lhv': ks.FUEL_LHV, 'density': ks.FUEL_DENSITY, 'co2PerKg': ks.CO2_PER_KG_FUEL},
 }

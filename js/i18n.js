@@ -299,6 +299,11 @@ Object.assign(STRINGS.ru, {
   emptyHistory: 'Здесь появятся ваши записанные заезды.', unitMl: 'мл',
 });
 
+// ---- driver weight (v3) ----
+Object.assign(STRINGS.en, {"driverWeight": "Your weight (kg, optional)", "driverWeightHelp": "Heavier karts accelerate more slowly. Your weight makes the comparison fair.", "driverMeta": "Driver {kg} kg", "weightTitle": "Driver weight", "weightUpdate": "Update", "unitKg": "kg", "weightNote": "Comparison laps are recalculated for a kart with a {kg} kg driver."});
+Object.assign(STRINGS.az, {"driverWeight": "Çəkiniz (kq, istəyə görə)", "driverWeightHelp": "Ağır kart daha yavaş sürətlənir. Çəkiniz müqayisəni ədalətli edir.", "driverMeta": "Sürücü {kg} kq", "weightTitle": "Sürücünün çəkisi", "weightUpdate": "Yenilə", "unitKg": "kq", "weightNote": "Müqayisə dövrələri {kg} kq sürücüsü olan kart üçün yenidən hesablanır."});
+Object.assign(STRINGS.ru, {"driverWeight": "Ваш вес (кг, необязательно)", "driverWeightHelp": "Тяжёлый карт разгоняется медленнее. Ваш вес делает сравнение честным.", "driverMeta": "Водитель {kg} кг", "weightTitle": "Вес водителя", "weightUpdate": "Обновить", "unitKg": "кг", "weightNote": "Эталонные круги пересчитаны для карта с водителем {kg} кг."});
+
 export const LOCALES = { en: 'en-GB', az: 'az-Latn-AZ', ru: 'ru-RU' };
 let lang = 'en';
 try {
