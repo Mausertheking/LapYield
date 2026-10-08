@@ -1,0 +1,12 @@
+import { analyzeSession } from '../js/analysis.js';
+import { SAMPLE_SESSION } from '../js/sample.js';
+const r = analyzeSession(SAMPLE_SESSION);
+console.log('ok', r.ok, 'crossings', r.crossings, 'laps', r.laps.length, 'valid', r.validLaps);
+for (const l of r.laps) console.log(`lap ${l.n}: ${l.time.toFixed(1)} s valid=${l.valid} onTrack=${(l.onTrackFraction*100).toFixed(0)}% fuel=${l.fuelMl.toFixed(1)} mL max=${(l.maxSpeed*3.6).toFixed(0)} km/h pace=${l.paceScore.toFixed(0)} eco=${l.ecoScore.toFixed(0)} brake=${l.brakeKJ.toFixed(0)} kJ`);
+console.log('session', JSON.stringify(r.session, (k,v)=> typeof v==='number'? +v.toFixed(3):v));
+console.log('ref', r.ref);
+console.log('tips', r.tips);
+const L = r.laps.find(l=>l.valid); if (L) console.log(L.corners.map(c=>`T${c.id} t=${c.time.toFixed(1)}/${c.idealTime.toFixed(1)} f=${c.fuelG.toFixed(2)}/${c.ecoFuelG.toFixed(2)} v=${(c.vMin*3.6).toFixed(0)}/${(c.ecoVMin*3.6).toFixed(0)}`).join('\n'));
+import { SECTORS } from '../js/analysis.js';
+console.log('SECTORS', SECTORS.map(z=>`S${z.id}: T${z.corners.join(',')} ${z.s0}-${z.s1}`));
+for (const l of r.laps) console.log('lap',l.n, l.sectors.map(z=>`S${z.id} ${z.time.toFixed(1)}/${z.idealTime.toFixed(1)}s ${z.fuelG.toFixed(2)}/${z.ecoFuelG.toFixed(2)}g`).join(' | '));
